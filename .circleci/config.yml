@@ -8,7 +8,7 @@ jobs:
     docker:
       # Specify the version you desire here
       - image: circleci/php:7.3-node-browsers
-      - image: circleci/mysql:8.0.12
+      - image: circleci/mysql:8.0.17
         command: mysqld --default-authentication-plugin=mysql_native_password
 
     environment:
@@ -31,6 +31,10 @@ jobs:
 
       - run: sudo apt update # PHP CircleCI 2.0 Configuration File# PHP CircleCI 2.0 Configuration File sudo apt install zlib1g-dev libsqlite3-dev
       - run: sudo docker-php-ext-install zip
+
+      - run:
+          name: Install PHP Extensions
+          command: sudo docker-php-ext-install pdo_mysql
 
       # Download and cache dependencies
       - restore_cache:
@@ -56,11 +60,29 @@ jobs:
           paths:
             - node_modules
 
+      - run:
+          name: composer install
+          working_directory: laravel
+          command: composer install -n --prefer-dist
+
+      - run:
+          name: Wait for db
+          command: dockerize -wait tcp://localhost:3306 -timeout 1m
+
       # prepare the database
-      - run: touch storage/testing.sqlite
-      - run: php artisan migrate --env=testing --database=sqlite_testing --force
+      # - run: touch storage/testing.sqlite
+      # - run: php artisan migrate --env=testing --database=sqlite_testing --force
+
+      - run:
+          name: Migration & Seeding
+          working_directory: laravel
+          command: php artisan migrate --seed
 
       # run tests with phpunit or codecept
       #- run: ./vendor/bin/phpunit
-      - run: ./vendor/bin/codecept build
-      - run: ./vendor/bin/codecept run
+      # - run: ./vendor/bin/codecept build
+      # - run: ./vendor/bin/codecept run
+      - run:
+          name: Unittest
+          working_directory: laravel
+          command: ./vendor/bin/phpunit
