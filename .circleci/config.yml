@@ -62,7 +62,7 @@ jobs:
 
       - run:
           name: composer install
-          working_directory: laravel
+          working_directory: ../mashed_potatoes
           command: composer install -n --prefer-dist
 
       - run:
@@ -75,7 +75,7 @@ jobs:
 
       - run:
           name: Migration & Seeding
-          working_directory: laravel
+          working_directory: ../mashed_potatoes
           command: php artisan migrate --seed
 
       # run tests with phpunit or codecept
@@ -84,5 +84,5 @@ jobs:
       # - run: ./vendor/bin/codecept run
       - run:
           name: Unittest
-          working_directory: laravel
+          working_directory: ../mashed_potatoes
           command: ./vendor/bin/phpunit
